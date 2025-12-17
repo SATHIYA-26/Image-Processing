@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+
+# Datasets (VERY IMPORTANT)
+data/
+dataset/
+dataset_open/
+dataset_taskB/
+*.zip
+
+# Outputs
+outputs/
+outputs_taskB/
+outputs.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

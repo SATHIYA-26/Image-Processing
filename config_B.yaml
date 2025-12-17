@@ -1,0 +1,21 @@
+data:
+  train_dir: "dataset_taskB/train"
+  val_dir: "dataset_taskB/val"
+  test_dir: "dataset_taskB/test"
+  img_size: 224
+  batch_size: 2
+  num_workers: 0  # Changed to 0 to disable multiprocessing
+model:
+  n_channels: 3
+  n_classes: 2  # 1 for global, 1 for mask
+training:
+  num_epochs: 2
+  lr: 0.001
+  weight_decay: 0.0001
+  mask_weight: 0.5  # Weight for mask loss
+paths:
+  out_dir: "outputs_taskB"
+run_name: "unet_task_b"
+team_name: "MyTeam"  # Replace with your registered team name
+device: "cpu"  # Use "cpu" if no GPU available
+seed: 42

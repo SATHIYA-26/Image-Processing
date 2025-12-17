@@ -1,0 +1,191 @@
+Complete Beginner-Friendly Explanation of Your MediaEval 2025 Project
+Hello! I'll explain your project in simple terms, like I'm teaching a beginner who knows basic Python but is new to machine learning. Your project is an AI system to detect if images are "real" (authentic photos) or "fake" (generated or manipulated by AI tools). It's for a competition called MediaEval 2025, Task A (Real vs. Synthetic Image Detection). The goal is to classify images and create submission files with predictions.
+The project uses Python and libraries like PyTorch (for AI models) to train an AI model, test it, and generate results. It has several files that work together like pieces of a puzzle. I'll explain each file, what it does, how it works, and the overall execution flow.
+1. Overview of the Project
+
+What It Does:
+
+Organizes images into folders for "real" and "fake".
+Trains an AI model (ConvNeXt-B) to learn the difference between real and fake images.
+Tests the model on new images to predict if they are real or fake.
+Generates a file with predictions (probabilities and labels) and zips it for submission.
+
+
+How It Works:
+
+The model is like a smart camera that "looks" at images and guesses if they're real or fake by learning patterns (e.g., unnatural edges in fake images).
+It uses "transfer learning" (starting with a pre-trained model and tweaking it for your data) to learn quickly.
+The project is run from the terminal with commands like python main.py --action train.
+
+
+Key Concepts for Beginners:
+
+AI Model (ConvNeXt-B): A type of neural network (like a brain) that looks at images layer by layer to extract features (e.g., colors, shapes).
+Training: Feeding the model thousands of images with labels ("real" or "fake") so it learns.
+Inference: Using the trained model to predict on new images.
+Loss and Accuracy: "Loss" measures how wrong the model is (lower is better); "Accuracy" measures how often it's right (higher is better).
+GPU: A special computer part that makes training faster (like a super calculator for AI).
+
+
+
+The project has two "runs": "constrained" (using only official data) and "open" (using extra data). You use different config files for each.
+2. Explanation of Each File
+I'll explain what each file is, what it contains, and how it works. I'll use simple analogies and break down the code.
+
+utils.py:
+
+What It Does: This is a "helper" file with tools used by other files. It loads your settings from a config file and sets up random numbers so results are repeatable.
+How It Works:
+
+load_config: Reads a YAML file (like a settings list) and turns it into a Python dictionary (easy to use in code).
+seed_everything: Sets "seeds" so random parts (e.g., shuffling data) are the same every time you run the code.
+load_mask: Loads a "mask" image (for Task B, which we're not doing now) or creates a blank one if missing.
+
+
+Analogy: Like a toolbox with a screwdriver (load_config) and hammer (seed_everything) that other files borrow.
+Code Breakdown:
+
+import yaml: Library to read YAML files.
+load_config: Opens the file, reads it, and returns the data. If it fails, stops the program.
+seed_everything: Makes sure random numbers are the same for fairness.
+load_mask: Opens an image or makes a blank one (not used in Task A).
+
+
+
+
+config_constrained.yaml (and config_open.yaml):
+
+What It Does: This is a "settings file" that tells your code things like image size, how many images to process at once, and where to find data.
+How It Works: It's a text file with key-value pairs (e.g., img_size: 224). utils.py reads it and gives the values to other files.
+Analogy: Like a recipe card listing ingredients (e.g., batch_size = 32).
+Code Breakdown: It's not code—it's a YAML file with sections like data, model, training. For example, device: "cuda" tells the code to use the GPU.
+
+
+model.py:
+
+What It Does: Defines the AI "brain" (ConvNeXt-B model) that learns to tell real and fake images apart.
+How It Works: Loads a pre-trained ConvNeXt-B model and adds a "classifier" layer to output 2 classes (real or fake).
+Analogy: Like a detective (backbone) who gathers clues, and a judge (classifier) who decides "real" or "fake".
+Code Breakdown:
+
+create_model: Loads ConvNeXt-B from timm.
+__init__: Builds the model, sets up the classifier with dropout to avoid overfitting.
+forward: Runs the image through the backbone and classifier to get predictions.
+freeze_backbone: Locks the detective (backbone) so only the judge learns first.
+
+
+
+
+train.py:
+
+What It Does: Trains the model using your images (400k for constrained run).
+How It Works: Loads data, runs two steps (train head, then fine-tune full model), saves the model, and creates val_probs.csv.
+Analogy: Like teaching a student (model) with books (images) and tests (validation).
+Code Breakdown:
+
+SyntheticDataset: Finds images in 0_real and 1_fake folders, assigns labels.
+train_model: Loops through epochs, trains on images, calculates loss/accuracy, saves best model.
+Step 1: Freezes backbone, trains classifier.
+Step 2: Unfreezes all, fine-tunes with lower learning rate.
+Saves checkpoints and probabilities.
+
+
+
+
+infer.py:
+
+What It Does: Uses the trained model to predict probabilities on new images (e.g., 10k test set).
+How It Works: Loads the model, processes test images, saves a CSV with IDs and probs.
+Analogy: Like the detective examining new evidence (test images) and giving confidence scores.
+Code Breakdown:
+
+TestDataset: Finds test images.
+infer_folder: Loads model, runs images through it, collects probs, saves CSV.
+
+
+
+
+test.py:
+
+What It Does: Tests the model on a test folder and predicts for one image.
+How It Works: Loads the model, calculates accuracy on test data, predicts for a single image.
+Analogy: Like grading the student (model) on a quiz (test data).
+Code Breakdown:
+
+test_model: Runs the model on test data, calculates accuracy.
+predict_image: Predicts for one image.
+Main: Loads model, runs tests.
+
+
+
+
+organize_data.py:
+
+What It Does: Splits raw images into train/val/test with real/fake folders.
+How It Works: Uses a CSV or filename to assign labels, copies files to folders.
+Analogy: Like sorting books (images) into shelves (folders).
+Code Breakdown:
+
+Loads CSV or infers labels.
+Splits with train_test_split.
+Copies to train/real, train/fake, etc.
+
+
+
+
+main.py:
+
+What It Does: The "boss" file that runs training, inference, or submission.
+How It Works: Uses arguments to call other files (e.g., --action train calls train.py).
+Analogy: Like a menu that chooses what to cook (train or infer).
+Code Breakdown:
+
+Parses arguments (e.g., --config).
+Calls train, infer_folder, or submit.
+
+
+
+
+threshold.py:
+
+What It Does: Finds the best threshold (e.g., 0.5) for turning probabilities into labels.
+How It Works: Uses validation probs and labels to test thresholds for best F1 score.
+Analogy: Like finding the best cutoff score for a test (e.g., 50% pass).
+Code Breakdown: Loads probs/labels, loops through thresholds, picks the best.
+
+
+submit.py:
+
+What It Does: Creates the submission file (CSV and ZIP) from test probs.
+How It Works: Adds label and threshold columns, saves CSV, zips it.
+Analogy: Like packaging your homework (predictions) for the teacher (competition).
+Code Breakdown: Loads probs CSV, applies threshold, saves and zips.
+
+
+
+Execution Flow
+
+Organize Data (if needed): Run python organize_data.py to sort images into folders (e.g., train/0_real, train/1_fake).
+Train: python main.py --config config_constrained.yaml --action train
+
+Loads config from config_constrained.yaml (using utils.py).
+Loads data from dataset/train/ and val/ using SyntheticDataset.
+Trains the model (ConvNeXt-B) in two steps.
+Saves models and val_probs.csv.
+
+
+Infer Test: python main.py --config config_constrained.yaml --action infer_test --ckpt outputs/convnext_b_constrained_finetuned_model.pth --test_dir data/test
+
+Loads model and test images.
+Predicts probs, saves test_probs.csv.
+
+
+Submit: python main.py --config config_constrained.yaml --action submit --ckpt outputs/convnext_b_constrained_finetuned_model.pth
+
+Loads test_probs.csv.
+Applies threshold, saves CSV and ZIP.
+
+
+Test Single Image: python test.py --config config_constrained.yaml --ckpt outputs/convnext_b_constrained_finetuned_model.pth --sample_image data/test/facebook_128.jpg
+
+Predicts "real" or "fake" for one image.

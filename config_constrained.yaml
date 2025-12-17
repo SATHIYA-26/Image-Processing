@@ -1,0 +1,19 @@
+data:
+  train_dir: "dataset/train"  # 400k (200k 0_real, 200k 1_fake)
+  val_dir: "dataset/val"      # 10k (5k 0_real, 5k 1_fake)
+  test_dir: "data/test"
+  img_size: 224
+  batch_size: 8
+  num_workers: 4
+model:
+  num_classes: 2
+training:
+  num_epochs_step1: 1
+  num_epochs_step2: 1
+  lr_step1: 0.001
+  lr_step2: 0.0001
+  weight_decay: 0.0001
+paths:
+  out_dir: "outputs"
+run_name: "convnext_b_constrained"
+device: "cuda"  # GPU support
