@@ -14,10 +14,8 @@ Two runs are required:
 Constrained Run – Only official datasets
 
 Open Run – Any additional external data allowed
-
-📂 Task A Folder Structure
 project_directory/
-├── dataset/
+├── dataset/                 # Task A (Constrained)
 │   ├── train/
 │   │   ├── 0_real/
 │   │   └── 1_fake/
@@ -25,7 +23,7 @@ project_directory/
 │       ├── 0_real/
 │       └── 1_fake/
 │
-├── dataset_open/              # Used only for Open Run
+├── dataset_open/            # Task A (Open)
 │   ├── train/
 │   │   ├── 0_real/
 │   │   └── 1_fake/
@@ -33,8 +31,12 @@ project_directory/
 │       ├── 0_real/
 │       └── 1_fake/
 │
-├── outputs/
-├── submission/
+├── dataset_taskB/           # Task B datasets
+│   ├── TGIF/
+│   └── validation/
+│
+├── outputs/                 # Models & inference outputs
+├── submission/              # Final ZIP files
 │
 ├── train.py
 ├── infer.py
@@ -42,8 +44,12 @@ project_directory/
 ├── main.py
 ├── model.py
 ├── utils.py
+│
 ├── config_constrained.yaml
 ├── config_open.yaml
+├── requirements.txt
+└── README.md
+
 
 ⚙️ Model
 
@@ -107,70 +113,52 @@ img002.jpg,0.124,0,0.5
 Repeat the same process with config_open.yaml for the Open Run.
 
 🔹 Task B – Manipulated Region Localization
-📝 Task Description
+Description
 
 For each image:
 
-Predict whether it is manipulated (classification)
+Predict if it is manipulated
 
-Predict a pixel-level probability mask indicating manipulated regions
+Predict a pixel-level probability mask
 
-📂 Task B Dataset Structure
-Training – TGIF Dataset
-TGIF/
-├── orig/
-├── ps-sp/
-├── sd2-sp/
-├── sd2-fr/
-├── sdxl-fr/
-└── masks/
+Datasets
 
-Validation – COCO + RAISE
-validation/
-├── coco/
-│   ├── original/
-│   ├── brushnet/
-│   │   ├── image/
-│   │   └── mask/
-│   └── ...
-└── raise/
+Training: TGIF dataset
 
-⚙️ Model
+Validation: COCO + RAISE
 
-Architecture: CombinedModel (classification + segmentation)
+Test: Unlabeled (provided by organizers)
 
-Loss:
+Model
 
-Classification → CrossEntropy
+Architecture: Combined classification + segmentation
 
-Localization → BCE / Dice
+Loss: CrossEntropy + Mask loss
 
 Config:
 
 mask_weight: 1.0
 
-🚀 Task B Outputs
-🔸 Mask Files
+Task B Output Files
+
+Mask Files
 
 One .npz file per test image
 
+Float16 probability array (H, W)
+
 Filename must match image name
 
-fEdOddAW3EeT.npz
+scores.csv
 
-
-Contents:
-
-(H, W) float16 array with values in [0.0, 1.0]
-
-🔸 scores.csv
 image_id,prob,label,threshold,loc_threshold
-img001.jpg,0.715,1,0.5,0.5
-img002.jpg,0.042,0,0.5,0.5
+image_001.jpg,0.715,1,0.5,0.5
 
-🔸 Submission ZIP
+
+Submission ZIP
+
 teamname_localization_masks.zip
 ├── scores.csv
-├── img001.npz
-├── img002.npz
+├── image_001.npz
+├── image_002.npz
 └── ...
