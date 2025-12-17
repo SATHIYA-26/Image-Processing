@@ -1,74 +1,64 @@
-# Image-Processing
+# Image Processing – MediaEval 2025
+## Synthetic Image Detection
 
-🔹 Task A – Real vs Synthetic Image Detection
-📝 Task Description
+This repository contains the complete implementation for the **MediaEval 2025 Synthetic Image Detection Challenge**, covering:
 
+- **Task A:** Real vs. Synthetic Image Classification  
+- **Task B:** Manipulated Region Localization  
+
+Each task is handled **independently** with separate datasets, training pipelines, and submission formats.
+
+---
+
+## 🔹 Task A – Real vs. Synthetic Image Detection
+
+### 📌 Task Description
 Given an image, predict whether it is:
 
-0 → Real
-
-1 → Synthetic
+- **0 → Real**
+- **1 → Synthetic**
 
 Two runs are required:
+- **Constrained Run** – Only official datasets allowed
+- **Open Run** – External or additional datasets allowed
 
-Constrained Run – Only official datasets
-
-Open Run – Any additional external data allowed
-project_directory/
-├── dataset/                 # Task A (Constrained)
-│   ├── train/
-│   │   ├── 0_real/
-│   │   └── 1_fake/
-│   └── val/
-│       ├── 0_real/
-│       └── 1_fake/
-│
-├── dataset_open/            # Task A (Open)
-│   ├── train/
-│   │   ├── 0_real/
-│   │   └── 1_fake/
-│   └── val/
-│       ├── 0_real/
-│       └── 1_fake/
-│
-├── dataset_taskB/           # Task B datasets
-│   ├── TGIF/
-│   └── validation/
-│
-├── outputs/                 # Models & inference outputs
-├── submission/              # Final ZIP files
-│
-├── train.py
-├── infer.py
-├── submit.py
-├── main.py
-├── model.py
-├── utils.py
-│
-├── config_constrained.yaml
-├── config_open.yaml
-├── requirements.txt
-└── README.md
+---
 
 
-⚙️ Model
 
-Backbone: ConvNext-B
+### ⚙️ Task A Model
 
-Architecture: CombinedModel (classification branch only)
+- **Backbone:** ConvNeXt-B  
+- **Architecture:** CombinedModel (classification branch only)
 
-Training Strategy:
+---
 
-Step 1: Train classifier head
+### 🧠 Training Strategy
 
-Step 2: Fine-tune last backbone layers
+1. **Step 1:** Train classifier head  
+2. **Step 2:** Fine-tune last backbone layers  
 
-🚀 Task A Commands & Outputs
-🔸 Training
+---
+
+### 🚀 Task A Commands
+
+#### Training
+```bash
 python main.py --config config_constrained.yaml --action train
+Inference
+bash
+Copy code
+python main.py --config config_constrained.yaml --action infer_test \
+--ckpt outputs/<run_name>_finetuned_model.pth \
+--test_dir data/test
+Submission
+bash
+Copy code
+python main.py --config config_constrained.yaml --action submit
+Repeat the same steps using config_open.yaml for the Open Run.
 
-
-Outputs (outputs/):
+📤 Task A Outputs
+Training Outputs (outputs/):
 
 <run_name>_classifier_model.pth
 
@@ -76,87 +66,75 @@ Outputs (outputs/):
 
 <run_name>_val_probs.csv
 
-🔸 Inference
-python main.py --config config_constrained.yaml --action infer_test \
---ckpt outputs/<run_name>_finetuned_model.pth \
---test_dir data/test
+Inference Output:
 
-
-Output:
-
+Copy code
 <run_name>_test_probs.csv
+Submission ZIPs (submission/):
 
+Copy code
+teamname_constrained.zip
+teamname_open.zip
+CSV Format:
 
-Format:
-
-image_id,prob
-img001.jpg,0.823
-img002.jpg,0.124
-
-🔸 Submission
-python main.py --config config_constrained.yaml --action submit
-
-
-Output:
-
-submission/
-└── teamname_constrained.zip
-
-
-CSV inside ZIP:
-
+Copy code
 image_id,prob,label,threshold
-img001.jpg,0.823,1,0.5
-img002.jpg,0.124,0,0.5
-
-
-Repeat the same process with config_open.yaml for the Open Run.
-
+image_001.jpg,0.873,1,0.5
+image_002.jpg,0.142,0,0.5
 🔹 Task B – Manipulated Region Localization
-Description
-
+📌 Task Description
 For each image:
 
-Predict if it is manipulated
+Predict whether it is manipulated
 
-Predict a pixel-level probability mask
+Predict a pixel-level probability mask identifying manipulated regions
 
-Datasets
+📂 Task B Dataset Structure
+Copy code
+dataset_taskB/
+├── TGIF/                     # Training dataset
+│   ├── orig/
+│   ├── ps-sp/
+│   ├── sd2-sp/
+│   ├── sd2-fr/
+│   ├── sdxl-fr/
+│   └── masks/
+│
+└── validation/               # Validation dataset
+    ├── coco/
+    └── raise/
+⚙️ Task B Model
+Architecture: CombinedModel (classification + segmentation)
 
-Training: TGIF dataset
+Loss Function:
 
-Validation: COCO + RAISE
+Classification → CrossEntropy Loss
 
-Test: Unlabeled (provided by organizers)
+Localization → Mask loss (BCE / Dice)
 
-Model
+Config Setting:
 
-Architecture: Combined classification + segmentation
-
-Loss: CrossEntropy + Mask loss
-
-Config:
-
+yaml
+Copy code
 mask_weight: 1.0
-
-Task B Output Files
-
+📤 Task B Outputs
 Mask Files
-
 One .npz file per test image
-
-Float16 probability array (H, W)
 
 Filename must match image name
 
-scores.csv
+Stored as (H, W) float16 probability array
 
+Example:
+
+Copy code
+image_001.npz
+scores.csv
+Copy code
 image_id,prob,label,threshold,loc_threshold
 image_001.jpg,0.715,1,0.5,0.5
-
-
 Submission ZIP
-
+Copy code
 teamname_localization_masks.zip
 ├── scores.csv
 ├── image_001.npz
